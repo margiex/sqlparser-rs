@@ -58,7 +58,8 @@ jobs:
     - name: Coverage
       if: matrix.rust == 'stable'
       run: |
-        cargo tarpaulin
+        cargo tarpaulin -o Lcov --output-dir ./coverage
+        ls -l ./coverage
     - name: Coveralls
       if: matrix.rust == 'stable'
       uses: coverallsapp/github-action@master
