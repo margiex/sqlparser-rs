@@ -1,23 +1,11 @@
-dist: xenial
-sudo: required
-cache: cargo
 language: rust
+# tarpaulin has only been tested on bionic and trusty other distros may have issues
+dist: bionic
 addons:
-  apt:
-    packages:
-      - kcov
-      - libcurl4-openssl-dev
-      - libelf-dev
-      - libdw-dev
-      - binutils-dev
-      - cmake
-    sources:
-      - kalakris-cmake
-      # The version of kcov shipped with Xenial (v25) doesn't support the
-      # --verify option that `cargo coveralls` passes. This PPA has a more
-      # up-to-date version. It can be removed if Ubuntu ever ships a newer
-      # version, or replaced with another PPA if this one falls out of date.
-      - sourceline: ppa:sivakov512/kcov
+    apt:
+        packages:
+            - libssl-dev
+cache: cargo
 
 rust:
   - stable
@@ -35,17 +23,10 @@ before_script:
 
   - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
   - export PATH=$HOME/.cargo/bin:$PATH
-  # `cargo install` fails if the specified binary is already installed, and
-  # doesn't yet support a `--if-not-installed` option [0], so for now assume
-  # failures mean the package is already installed. If installation truly
-  # failed, the build will fail later anyway, when we try to use the installed
-  # binary. Note that `cargo install --force` is not a solution, as it always
-  # rebuilds from scratch, ignoring the cache entirely.
-  #
-  # [0]: https://github.com/rust-lang/cargo/issues/2082
-  - cargo install cargo-update || echo "cargo-update already installed"  # for `cargo install-update`
-  - cargo install cargo-travis || echo "cargo-travis already installed"  # for `cargo coveralls`
-  - cargo install-update -a  # updates cargo-travis, if the cached version is outdated
+  - |
+    if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
+      cargo install cargo-tarpaulin
+    fi
 
 script:
   # Clippy must be run first, as its lints are only triggered during
@@ -61,7 +42,7 @@ script:
   - cargo +nightly fmt -- --check --config-path <(echo 'license_template_path = "HEADER"')
 
 after_success:
-  - cargo coveralls --verbose
+  - cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
 
 env:
   global:
