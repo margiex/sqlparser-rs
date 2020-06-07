@@ -41,8 +41,8 @@ script:
   # only available on the nightly rustfmt.
   - cargo +nightly fmt -- --check --config-path <(echo 'license_template_path = "HEADER"')
 
-after_success:
-  - cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
+# after_success:
+#   - cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
 
 env:
   global:
